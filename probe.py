@@ -43,10 +43,16 @@ class HallucinationProbe(nn.Module):
             input_dim: Feature vector dimensionality.
         """
         self._net = nn.Sequential(
-            nn.Linear(input_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1),
-        )
+        nn.Linear(input_dim, 256),
+        nn.BatchNorm1d(256),
+        nn.ReLU(),
+        nn.Dropout(0.3),
+        nn.Linear(256, 128),
+        nn.BatchNorm1d(128),
+        nn.ReLU(),
+        nn.Dropout(0.2),
+        nn.Linear(128, 1)
+    )
 
     # ------------------------------------------------------------------
 
@@ -95,19 +101,30 @@ class HallucinationProbe(nn.Module):
         # ------------------------------------------------------------------
         # STUDENT: Replace or extend the training loop below.
         # ------------------------------------------------------------------
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        from sklearn.model_selection import train_test_split
+    indices = np.arange(len(X_t))
+    tr_idx, val_idx = train_test_split(indices, test_size=0.2, stratify=y, random_state=42)
+    X_tr, y_tr = X_t[tr_idx], y_t[tr_idx]
+    X_val, y_val = X_t[val_idx], y_t[val_idx]
 
-        self.train()
-        for _ in range(200):
-            optimizer.zero_grad()
-            logits = self(X_t)
-            loss = criterion(logits, y_t)
-            loss.backward()
-            optimizer.step()
-        # ------------------------------------------------------------------
-
-        self.eval()
-        return self
+    best_loss = math.inf
+    patience, no_improve = 10, 0
+    best_state = None
+    for epoch in range(300):
+        # train_on_batch
+        logits_tr = self(X_tr)
+        loss_tr = criterion(logits_tr, y_tr)
+        # ... backward ...
+        with torch.no_grad():
+            logits_val = self(X_val)
+            loss_val = criterion(logits_val, y_val)
+        if loss_val < best_loss - 1e-5:
+            best_loss, no_improve, best_state = loss_val, 0, self.state_dict().copy()
+        else:
+            no_improve += 1
+            if no_improve >= patience: break
+    if best_state: self.load_state_dict(best_state)
+    return self
 
     def fit_hyperparameters(
         self, X_val: np.ndarray, y_val: np.ndarray
