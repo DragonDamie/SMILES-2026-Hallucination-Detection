@@ -1,5 +1,5 @@
-#The methods#
-
+The methods
+=====================
 I have looked up some literature on hallucination detection adn tried out the methods that are told to be useful for the Qwen models.
 The experiments outcome is presented in the table below.
 
@@ -24,17 +24,12 @@ The experiments outcome is presented in the table below.
 | Experiment 3      | 73.08     | 81.33 | 73.49   |
 | Experiment 4      | 70.19     | 82.49 | 73.71   |
 
-#References#
-[1]
-T. Likun, H. Kuan-Wei, and W. Kevin, “InterpDetect: Interpretable Signals for Detecting Hallucinations in Retrieval-Augmented Generation,” Oct. 2025, doi: 10.48550/arxiv.2510.21538.
-[2]
-F. Thoresen and D. S. Smart, “A multilingual hallucination benchmark: MultiWikiQHalluA,” May 04, 2026. [Online]. Available: https://arxiv.org/abs/2605.02504v1
-[3]
-T. Likun, H. Kuan-Wei, and W. Kevin, “FRED: Financial Retrieval-Enhanced Detection and Editing of Hallucinations in Language Models,” Aug. 2025, doi: 10.48550/arxiv.2507.20930.
-[4]
-A. Urlana, G. Kanumolu, C. V. Kumar, B. M. Garlapati, and R. Mishra, “HalluCounter: Reference-free LLM Hallucination Detection in the Wild!,” arXiv.org, vol. abs/2503.04615, Mar. 2025, doi: 10.48550/arxiv.2503.04615.
-[5]
-U. Köse and İ. Uysal, “Persona Vectors in Controlling Hallucination of Small Large Language Models: A Safety-Oriented Analysis,” pp. 1–9, Oct. 2025, doi: 10.1109/cars67163.2025.11337402.
-[6]
-M. Liu, “A Unified Virtual Mixture-of-Experts Framework:Enhanced Inference and Hallucination Mitigation in Single-Model System,” Apr. 01, 2025. [Online]. Available: https://arxiv.org/abs/2504.03739v1
+References
+=====================
+1) T. Likun, H. Kuan-Wei, and W. Kevin, “InterpDetect: Interpretable Signals for Detecting Hallucinations in Retrieval-Augmented Generation,” Oct. 2025, doi: 10.48550/arxiv.2510.21538.
+2) F. Thoresen and D. S. Smart, “A multilingual hallucination benchmark: MultiWikiQHalluA,” May 04, 2026. [Online]. Available: https://arxiv.org/abs/2605.02504v1
+3) T. Likun, H. Kuan-Wei, and W. Kevin, “FRED: Financial Retrieval-Enhanced Detection and Editing of Hallucinations in Language Models,” Aug. 2025, doi: 10.48550/arxiv.2507.20930.
+4) A. Urlana, G. Kanumolu, C. V. Kumar, B. M. Garlapati, and R. Mishra, “HalluCounter: Reference-free LLM Hallucination Detection in the Wild!,” arXiv.org, vol. abs/2503.04615, Mar. 2025, doi: 10.48550/arxiv.2503.04615.
+5) U. Köse and İ. Uysal, “Persona Vectors in Controlling Hallucination of Small Large Language Models: A Safety-Oriented Analysis,” pp. 1–9, Oct. 2025, doi: 10.1109/cars67163.2025.11337402.
+6) M. Liu, “A Unified Virtual Mixture-of-Experts Framework:Enhanced Inference and Hallucination Mitigation in Single-Model System,” Apr. 01, 2025. [Online]. Available: https://arxiv.org/abs/2504.03739v1
 
