@@ -88,8 +88,26 @@ def extract_geometric_features(
     # STUDENT: Replace or extend the geometric feature extraction below.
     # ------------------------------------------------------------------
 
-    # Placeholder: returns an empty tensor (no geometric features).
-    return torch.zeros(0)
+    real_positions = attention_mask.nonzero(as_tuple=False)
+    if len(real_positions) == 0: return torch.zeros(8)
+    last_token_idx = real_positions[-1].item()
+    # берём последний токен со всех слоёв
+    layer_states = hidden_states[:, last_token_idx, :]
+    n_layers = hidden_states.shape[0]
+    # 1. мера ICR — норма разности между последовательными слоями
+    icr_scores = [torch.norm(layer_states[i] - layer_states[i-1]).item() for i in range(1, n_layers)]
+    # 2. LSD — косинусное сходство между слоями (диапазон [-1,1]; 1=полное сходство)
+    cosine_sims = [torch.nn.functional.cosine_similarity(layer_states[i].unsqueeze(0), layer_states[i-1].unsqueeze(0)).item()
+                   for i in range(1, n_layers)]
+    # 3. запасные признаки: размах норм, среднеквадратичное отклонение, наклон
+    norms = torch.norm(layer_states, dim=1)
+    norm_range = (norms.max() - norms.min()).item()
+    norm_std  = norms.std().item()
+    norm_slope = (norms[-1] - norms[0]).item()
+    # объединяем всё в вектор
+    geo = torch.tensor(icr_scores + cosine_sims + [norm_range, norm_std, norm_slope], dtype=torch.float32)
+    if geo.numel() == 0: geo = torch.zeros(8)
+    return geo
 
 
 def aggregation_and_feature_extraction(
