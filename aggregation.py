@@ -45,13 +45,11 @@ def aggregate(
     # STUDENT: Replace or extend the aggregation below.
     # ------------------------------------------------------------------
 
-     # Нормализуем конфиг: если None или не словарь — создаём пустой
-    if not isinstance(layer_config, dict):
-        layer_config = {}
+    if cfg is None:
+        cfg = {}
     
-    # Безопасно извлекаем параметры
-    agg_type = layer_config.get('type', 'select_top_k')
-    layer_indices = layer_config.get('layer_indices', None)
+    agg_type = cfg.get('type', 'select_top_k')
+    layer_indices = cfg.get('layer_indices', None)
     
     n_layers = hidden_states.shape[0]
     hidden_dim = hidden_states.shape[2]
@@ -68,16 +66,16 @@ def aggregate(
         start_layer = int(total_layers * 0.4)
         end_layer = int(total_layers * 0.7)
         layer_indices = list(range(start_layer, end_layer))
-        print(f"Auto-selected layers {start_layer} to {end_layer} (total: {total_layers})")
+        print(f"Auto-selected layers {start_layer} to {end_layer}")
     
-    selected_states = layer_states[layer_indices, :]
+    selected_states = layer_states[layer_indices, :]  # (k, hidden_dim)
     
     if agg_type == 'concatenate':
         feature = selected_states.flatten()
     elif agg_type == 'weighted_mean':
         weights = torch.ones(len(selected_states), device=hidden_states.device) / len(selected_states)
         feature = (selected_states * weights.view(-1, 1)).sum(dim=0)
-    else:  # 'select_top_k' или любой другой
+    else:  # select_top_k
         feature = selected_states[-1]
     
     return feature
