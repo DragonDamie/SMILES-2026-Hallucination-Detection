@@ -45,15 +45,53 @@ def aggregate(
     # STUDENT: Replace or extend the aggregation below.
     # ------------------------------------------------------------------
 
-    # Default: last real token of the final transformer layer.
-    layer = hidden_states[-1]          # (seq_len, hidden_dim)
-
-    # Find the index of the last real (non-padding) token.
-    real_positions = attention_mask.nonzero(as_tuple=False)  # (n_real, 1)
-    last_pos = int(real_positions[-1].item())                 # scalar index
-
-    feature = layer[last_pos]          # (hidden_dim,)
-
+    if layer_config is None:
+        # Настройки по умолчанию для Qwen (можно подобрать через валидацию)
+        layer_config = {
+            'type': 'select_top_k',
+            'layer_indices': None,  # Will be auto-selected
+            'use_geometric': True
+        }
+    
+    n_layers = hidden_states.shape[0]
+    hidden_dim = hidden_states.shape[2]
+    
+    # Find last real token position
+    real_positions = attention_mask.nonzero(as_tuple=False)
+    if len(real_positions) == 0:
+        return torch.zeros(hidden_dim, device=hidden_states.device)
+    last_token_idx = real_positions[-1].item()
+    
+    # Extract last token states from all layers
+    layer_states = hidden_states[:, last_token_idx, :]  # (n_layers, hidden_dim)
+    
+    # Smart layer selection if indices not provided
+    if layer_config['layer_indices'] is None:
+        # Based on empirical studies, hallucination signals are strongest in mid-late layers
+        # For Qwen with ~28-32 layers, this is around layers 14-22
+        total_layers = n_layers
+        start_layer = int(total_layers * 0.4)   # Start at 40% depth
+        end_layer = int(total_layers * 0.7)     # End at 70% depth
+        layer_config['layer_indices'] = list(range(start_layer, end_layer))
+        print(f"Auto-selected layers {start_layer} to {end_layer} (total: {total_layers})")
+    
+    selected_states = layer_states[layer_config['layer_indices'], :]  # (k, hidden_dim)
+    
+    if layer_config['type'] == 'concatenate':
+        # Concatenate all selected layers
+        feature = selected_states.flatten()
+    elif layer_config['type'] == 'select_top_k':
+        # Option: select top-k layers based on variance (signal strength)
+        # For now, just take last selected layer (often most informative)
+        feature = selected_states[-1]  # Last selected layer
+    elif layer_config['type'] == 'weighted_mean':
+        # Learnable weights through feature extraction layers
+        # This would require additional training parameters
+        weights = torch.softmax(torch.ones(len(selected_states)), dim=0)
+        feature = (selected_states * weights.view(-1, 1)).sum(dim=0)
+    else:
+        feature = selected_states[-1]  # Default: last selected layer
+    
     return feature
     # ------------------------------------------------------------------
 
