@@ -1,10 +1,19 @@
+Summary
+=====================
+There were conducted 4 experiments. The best AUROC score is 73.71% (experiments 2 and 4). 
+Links to the changed files:
+Aggregation: https://github.com/DragonDamie/SMILES-2026-Hallucination-Detection/blob/main/aggregation.py
+Probe: https://github.com/DragonDamie/SMILES-2026-Hallucination-Detection/blob/main/probe.py
+Splitting: https://github.com/DragonDamie/SMILES-2026-Hallucination-Detection/blob/main/splitting.py
+
+
 The methods
 =====================
 I have looked up some literature on hallucination detection adn tried out the methods that are told to be useful for the Qwen models.
 The experiments outcome is presented in the table below.
 
 1) The first experiment included change in aggregation function. T. Likun, H. Kuan-Wei, and W. Kevin [1] show that hallucination detection is stronger in later layers.
-   T. Likun, H. Kuan-Wei, and W. Kevin [2] use layer-wise probing to detect hallucination. I wrote a separate script for evaluating the F1 score on a validation set for every layer (last token was used, because Qwen model concentrates all the semantics from previous tokens in the last token). The layer with the highest score (=6) became the layer I look on. So I wrote the aggregation function with the 6th layer. The outcome of the model is shown in the tabel (experiment 1).
+   T. Likun, H. Kuan-Wei, and W. Kevin [2] use layer-wise probing to detect hallucination. I wrote a separate script for evaluating the F1 score on a validation set for every layer (last token was used, because Qwen model concentrates all the semantics from previous tokens in the last token [1]). The script is written in this file after the references. The layer with the highest score (=6) became the layer I look on. So I wrote the aggregation function with the 6th layer. The outcome of the model is shown in the tabel (experiment 1). The unexpected thing to me was that the best layer was 6th. In the mentioned works ([1], [2]) it was the middle or the late middle layers to be the best. However, for the task model with 24 layers it turned out to be the 6th one.
 
 2) The second experiment added geometrical features.
   For the geometrical features I used ICR-like norms of change between layers and Layer-wise semantic dynamics. Both ideas were taken from [1] and [3]. The function returns the vector of geometrical features. The outcome is represented in the table (experiment 2) - note that the experiment 2 also includes the steps in experiment 1 (and it is the same with every next experiment).
@@ -24,6 +33,10 @@ The experiments outcome is presented in the table below.
 | Experiment 3      | 73.08     | 81.33 | 73.49   |
 | Experiment 4      | 70.19     | 82.49 | 73.71   |
 
+Future Perspectives
+=====================
+The results of the experiments were not outstanding. The outcomes are note far from the baseline result. However, some improvements can be seen. There are a lot of opportunities to make the work better - to add fine-tuning, to get several best layers to count together instead of the only one, Mahalanobis Distance.
+
 References
 =====================
 1) T. Likun, H. Kuan-Wei, and W. Kevin, “InterpDetect: Interpretable Signals for Detecting Hallucinations in Retrieval-Augmented Generation,” Oct. 2025, doi: 10.48550/arxiv.2510.21538.
@@ -33,3 +46,6 @@ References
 5) U. Köse and İ. Uysal, “Persona Vectors in Controlling Hallucination of Small Large Language Models: A Safety-Oriented Analysis,” pp. 1–9, Oct. 2025, doi: 10.1109/cars67163.2025.11337402.
 6) M. Liu, “A Unified Virtual Mixture-of-Experts Framework:Enhanced Inference and Hallucination Mitigation in Single-Model System,” Apr. 01, 2025. [Online]. Available: https://arxiv.org/abs/2504.03739v1
 
+The script for finding the best layer
+=====================
+here: https://github.com/DragonDamie/SMILES-2026-Hallucination-Detection/blob/main/Script.py
