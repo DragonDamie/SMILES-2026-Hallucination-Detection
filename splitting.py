@@ -53,9 +53,9 @@ def split_data(
 
     idx = np.arange(len(y))
     
-    # Если нет DataFrame или колонки для группировки — используем обычный стратифицированный сплит
+ 
     if df is None or "prompt" not in df.columns:
-        # Обычное стратифицированное разбиение (как в исходном коде)
+       
         idx_train_val, idx_test = train_test_split(
             idx,
             test_size=test_size,
@@ -71,27 +71,27 @@ def split_data(
         )
         return [(idx_train, idx_val, idx_test)]
     
-    # --- Групповое разбиение (если есть колонка "prompt") ---
+   
     from sklearn.model_selection import GroupShuffleSplit
     
-    groups = df["prompt"].values  # идентификаторы групп (например, текст промпта)
+    groups = df["prompt"].values  
     
-    # Шаг 1: разбиваем на (train+val) и test с учётом групп
+  
     gss1 = GroupShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
-    (train_val_idx, test_idx), = next(gss1.split(idx, y, groups))
+    train_val_idx, test_idx = next(gss1.split(idx, y, groups))
     
-    # Шаг 2: внутри train_val снова разбиваем на train и val с учётом групп
-    # Для этого извлекаем метки и группы для train_val части
+
+  
     y_train_val = y[train_val_idx]
     groups_train_val = groups[train_val_idx]
-    # Относительный размер валидации внутри train_val
+    
     relative_val = val_size / (1.0 - test_size)
     gss2 = GroupShuffleSplit(n_splits=1, test_size=relative_val, random_state=random_state)
-    # Нужно отобразить индексы из train_val обратно в глобальные индексы
-    local_idx = np.arange(len(train_val_idx))
-    (train_local, val_local), = next(gss2.split(local_idx, y_train_val, groups_train_val))
     
-    # Преобразуем локальные индексы в глобальные
+    local_idx = np.arange(len(train_val_idx))
+    train_idx, val_idx = next(gss2.split(train_val_idx, y_train_val, groups_gss2))
+    
+   
     train_idx = train_val_idx[train_local]
     val_idx = train_val_idx[val_local]
     
