@@ -124,7 +124,7 @@ class HallucinationProbe(nn.Module):
             no_improve += 1
             if no_improve >= patience: break
     if best_state: self.load_state_dict(best_state)
-    return self
+        return self
 
     def fit_hyperparameters(
         self, X_val: np.ndarray, y_val: np.ndarray
