@@ -89,7 +89,7 @@ def split_data(
     gss2 = GroupShuffleSplit(n_splits=1, test_size=relative_val, random_state=random_state)
     
     local_idx = np.arange(len(train_val_idx))
-    train_idx, val_idx = next(gss2.split(train_val_idx, y_train_val, groups_train_val))
+    train_local, val_local = next(gss2.split(train_val_idx, y_train_val, groups_train_val))
     
    
     train_idx = train_val_idx[train_local]
