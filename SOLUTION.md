@@ -35,7 +35,7 @@ The experiments outcome is presented in the table below.
 
 Future Perspectives
 =====================
-The results of the experiments were not outstanding. The outcomes are note far from the baseline result. However, some improvements can be seen. There are a lot of opportunities to make the work better - to add fine-tuning, to get several best layers to count together instead of the only one, Mahalanobis Distance.
+Some improvements can be seen. There are a lot of opportunities to make the work better - to add fine-tuning, to get several best layers to count together instead of the only one, Mahalanobis Distance.
 
 References
 =====================
