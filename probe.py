@@ -101,30 +101,64 @@ class HallucinationProbe(nn.Module):
         # ------------------------------------------------------------------
         # STUDENT: Replace or extend the training loop below.
         # ------------------------------------------------------------------
+        import math
         from sklearn.model_selection import train_test_split
-    indices = np.arange(len(X_t))
-    tr_idx, val_idx = train_test_split(indices, test_size=0.2, stratify=y, random_state=42)
-    X_tr, y_tr = X_t[tr_idx], y_t[tr_idx]
-    X_val, y_val = X_t[val_idx], y_t[val_idx]
+        
+        X_scaled = self._scaler.fit_transform(X)
 
-    best_loss = math.inf
-    patience, no_improve = 10, 0
-    best_state = None
-    for epoch in range(300):
-        # train_on_batch
-        logits_tr = self(X_tr)
-        loss_tr = criterion(logits_tr, y_tr)
-        # ... backward ...
-        with torch.no_grad():
-            logits_val = self(X_val)
-            loss_val = criterion(logits_val, y_val)
-        if loss_val < best_loss - 1e-5:
-            best_loss, no_improve, best_state = loss_val, 0, self.state_dict().copy()
-        else:
-            no_improve += 1
-            if no_improve >= patience: break
-    if best_state: self.load_state_dict(best_state)
+        self._build_network(X_scaled.shape[1])
+
+        X_t = torch.from_numpy(X_scaled).float()
+        y_t = torch.from_numpy(y.astype(np.float32))
+
+        
+        n_pos = int(y.sum())
+        n_neg = len(y) - n_pos
+        pos_weight = torch.tensor([n_neg / max(n_pos, 1)], dtype=torch.float32)
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        
+        
+        indices = np.arange(len(X_t))
+        tr_idx, val_idx = train_test_split(indices, test_size=0.2, stratify=y, random_state=42)
+        X_tr, y_tr = X_t[tr_idx], y_t[tr_idx]
+        X_val, y_val = X_t[val_idx], y_t[val_idx]
+        
+       
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        
+        best_loss = math.inf
+        patience, no_improve = 10, 0
+        best_state = None
+        
+        for epoch in range(300):
+            # Train step
+            self.train()
+            optimizer.zero_grad()
+            logits_tr = self(X_tr)
+            loss_tr = criterion(logits_tr, y_tr)
+            loss_tr.backward()
+            optimizer.step()
+            
+            
+            self.eval()
+            with torch.no_grad():
+                logits_val = self(X_val)
+                loss_val = criterion(logits_val, y_val)
+            
+            if loss_val < best_loss - 1e-5:
+                best_loss = loss_val
+                no_improve = 0
+                best_state = self.state_dict().copy()
+            else:
+                no_improve += 1
+                if no_improve >= patience:
+                    break
+        
+        if best_state:
+            self.load_state_dict(best_state)
+        
         return self
+    
 
     def fit_hyperparameters(
         self, X_val: np.ndarray, y_val: np.ndarray
